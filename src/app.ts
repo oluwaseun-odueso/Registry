@@ -1,12 +1,29 @@
 import express from 'express';
 import { Application } from 'express';
+import { RequestHandler, ParamsDictionary } from 'express-serve-static-core';
+import { ParsedQs } from 'qs';
 
 class App {
   public app: Application
   public port: number
-  constructor (appInit: { port: number, middlewares: any, controllers: any}){
+
+  constructor (appInit: { port: number; middlewares: any;controllers: any}){
     this.app = express()
     this.port = appInit.port;
+    this.middlewares(appInit.middlewares)
+    this.routes(appInit.controllers)
+  }
+
+  private routes(controllers: any[]) {
+    controllers.forEach(controller => {
+      this.app.use(controller.path, controller.router)
+    });
+  }
+
+  private middlewares(middlewares: any[]) {
+    middlewares.forEach(middleware => {
+      this.app.use(middleware)
+    });
   }
 
   public listen () {
