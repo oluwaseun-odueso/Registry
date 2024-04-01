@@ -32,6 +32,24 @@ class CognitoService {
     }
   }
 
+  public async verifyAccount(username: string, code: string): Promise<boolean> {
+    try {
+      const params = {
+        ClientId: this.clientId,
+        ConfirmationCode: code, 
+        SecretHash: this.generateHash(username),
+        Username: username
+      }
+
+      const data = await this.cognitoIdentity.confirmSignUp(params).promise()
+      console.log(data)
+      return true
+    } catch (error: any) {
+      console.log(error.message, error)
+      throw new Error(`Error verifying user's email, ${error.message}`)
+    }
+  }
+
   private generateHash(username: string): string {
     return crypto.createHmac('SHA256', this.secretHash)
       .update(username + this.clientId)

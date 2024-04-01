@@ -1,5 +1,5 @@
 import express, { Request, Response } from 'express';
-import {OK, UNPROCESSABLE_ENTITY, INTERNAL_SERVER_ERROR} from 'http-status'
+import {OK, UNPROCESSABLE_ENTITY, INTERNAL_SERVER_ERROR, BAD_REQUEST} from 'http-status'
 import { body, validationResult } from 'express-validator'
 
 import CognitoService from '../services/cognito.service'
@@ -35,16 +35,17 @@ class AuthController {
       userAttr.push({ Name: 'name', Value: name});
 
       const cognito = new CognitoService();
-
       const success = await cognito.signUpUser(username, password, userAttr)
-      if (success) res.status(OK).json({status: true, message: "Account created successfully"})
 
+      if (!success) return res.status(BAD_REQUEST).json({status: false, message: "Invalid signup payload"})
+      
+      res.status(OK).json({status: true, message: "Account created successfully"})
     } catch (error: any) {
-      res.status(INTERNAL_SERVER_ERROR).json({status: false, message: "Could not complete signup"})
+      res.status(INTERNAL_SERVER_ERROR).json({status: false, message: "Error signing up user"})
     }
   }
 
-  signIn(req: Request, res:Response) {
+  async signIn(req: Request, res:Response) {
     try {
       const result = validationResult(req)
       if (!result.isEmpty()) {
@@ -52,19 +53,28 @@ class AuthController {
       }
       console.log('Signin body is valid')
     } catch (error: any) {
-      
-    }
+      res.status(INTERNAL_SERVER_ERROR).json({status: false, message: "Error signing in user"})    }
   }
 
-  verify(req: Request, res:Response) {
+  async verify(req: Request, res:Response) {
     try {
       const result = validationResult(req)
       if (!result.isEmpty()) {
         return res.status(UNPROCESSABLE_ENTITY).json({status: false, error: result.array()})
       }
+
+      const { username, code } = req.body;
       console.log('Verify body is valid')
-    } catch (error: any) {
+
+      const cognito = new CognitoService();
+      const success = await cognito.verifyAccount(username, code)
+
+      if (!success) return res.status(UNPROCESSABLE_ENTITY).json({status: false, message: "Invalid details"})
+
+      res.status(OK).json({status: false, message: "Email verification complete"})
       
+    } catch (error: any) {
+      res.status(INTERNAL_SERVER_ERROR).json({status: false, message: "Error verifying user's email"})
     }
   }
 
