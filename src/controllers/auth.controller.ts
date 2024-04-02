@@ -59,7 +59,7 @@ export default class AuthController {
 
       if (!success) return res.status(BAD_REQUEST).json({status: false, message: "Error signing in user"})
 
-      res.status(OK).json({status: true, message: "You are signed in"})
+      res.status(OK).json({status: true, message: "You are signed in", success})
     } catch (error: any) {
       res.status(INTERNAL_SERVER_ERROR).json({status: false, message: "Error signing in user"})    }
   }

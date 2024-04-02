@@ -2,6 +2,7 @@ import App from './app';
 
 import HomeController from './controllers/home.controller';
 import AuthController from './controllers/auth.controller';
+import ProtectedController from './controllers/protected.controller';
 
 import bodyParser from "body-parser";
 
@@ -10,6 +11,7 @@ const app = new App({
   controllers: [
     new HomeController(),
     new AuthController(),
+    new ProtectedController()
   ],
   middlewares: [
     bodyParser.json(),
