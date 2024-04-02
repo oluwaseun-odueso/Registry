@@ -50,7 +50,7 @@ export default class CognitoService {
     }
   }
 
-  public async signInUser(username: string, password: string): Promise<boolean> {
+  public async signInUser(username: string, password: string): Promise<{}> {
     try {
       const params = {
         AuthFlow: 'USER_PASSWORD_AUTH',
@@ -64,9 +64,80 @@ export default class CognitoService {
 
       const data = await this.cognitoIdentity.initiateAuth(params).promise()
       console.log(data)
-      return true
+      return data
     } catch (error: any) {
       throw new Error(`Error signing in user, ${error.message}`)
+    }
+  }
+
+  public async changePassword(oldUserPassword: string, newUserPassword: string) {
+    try {
+      const params = {
+        PreviousPassword: oldUserPassword,
+        ProposedPassword: newUserPassword,
+        AccessToken: 'ACCESS_TOKEN'
+      }
+      const data = await this.cognitoIdentity.changePassword(params).promise()
+      console.log(data)
+      return true
+    } catch (error: any) {
+      throw new Error(`Error changing user password, ${error.message}`)
+    }
+  }
+
+  public async deleteUser(username: string): Promise<boolean> {
+    try {
+      const params = {
+        AccessToken: 'ACCESS_TOKEN'
+      }
+      const data = await this.cognitoIdentity.deleteUser(params).promise()
+      return true
+    } catch (error: any) {
+      throw new Error(`Error deleting user, ${error.message}`);
+    }
+  }
+
+  public async forgotPassword(username: string): Promise<boolean> {
+    try {
+      const params = {
+        ClientId: this.clientId,
+        Username: username
+      }
+      const data = await this.cognitoIdentity.forgotPassword(params).promise()
+      console.log(data)
+      return true
+    } catch (error: any) {
+      throw new Error(`Error resetting user password, ${error.message}`);
+    }
+  }
+
+  public async confirmPassword(username: string, confirmationCode: string, newPassword: string): Promise<boolean> {
+    try {
+      const params = {
+        ClientId: this.clientId,
+        Username: username,
+        ConfirmationCode: confirmationCode,
+        Password: newPassword
+      }
+      const data = await this.cognitoIdentity.confirmForgotPassword(params).promise()
+      console.log(data)
+      return true
+    } catch (error: any) {
+      throw new Error(`Error confirming new password, ${error.message}`);
+    }
+  }
+
+  public async resendEmailVerificationCode(username: string): Promise<boolean> {
+    try{
+      const params = {
+        ClientId: this.clientId,
+        Username: username
+      }
+      const data = await this.cognitoIdentity.resendConfirmationCode(params).promise()
+      console.log(data)
+      return true
+    } catch (error: any) {
+      throw new Error(`Error resending email verification confirmation code, ${error.message}`);
     }
   }
 
@@ -75,11 +146,5 @@ export default class CognitoService {
       .update(username + this.clientId)
       .digest('base64')
   }
-
-  // hashSecret(username: string): string {
-  //   return crypto.createHmac('SHA256', this.secretHash)
-  //   .update(username + this.clientId)
-  //   .digest('base64')  
-  // }
 }
 
