@@ -4,7 +4,7 @@ import { body, validationResult } from 'express-validator'
 
 import CognitoService from '../services/cognito.service'
 
-class AuthController {
+export default class AuthController {
   public path = '/auth';
   public router = express.Router();
 
@@ -51,7 +51,15 @@ class AuthController {
       if (!result.isEmpty()) {
         return res.status(UNPROCESSABLE_ENTITY).json({status: false, error: result.array()})
       }
-      console.log('Signin body is valid')
+
+      const { username, password} = req.body
+
+      const cognito = new CognitoService();
+      const success = await cognito.signInUser(username, password)
+
+      if (!success) return res.status(BAD_REQUEST).json({status: false, message: "Error signing in user"})
+
+      res.status(OK).json({status: true, message: "You are signed in"})
     } catch (error: any) {
       res.status(INTERNAL_SERVER_ERROR).json({status: false, message: "Error signing in user"})    }
   }
@@ -72,7 +80,7 @@ class AuthController {
       if (!success) return res.status(UNPROCESSABLE_ENTITY).json({status: false, message: "Invalid details"})
 
       res.status(OK).json({status: false, message: "Email verification complete"})
-      
+
     } catch (error: any) {
       res.status(INTERNAL_SERVER_ERROR).json({status: false, message: "Error verifying user's email"})
     }
@@ -115,4 +123,3 @@ class AuthController {
   }
 }
 
-export default AuthController;

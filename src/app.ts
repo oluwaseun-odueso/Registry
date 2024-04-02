@@ -3,7 +3,7 @@ import { Application } from 'express';
 import { RequestHandler, ParamsDictionary } from 'express-serve-static-core';
 import { ParsedQs } from 'qs';
 
-class App {
+export default class App {
   public app: Application
   public port: number
 
@@ -33,4 +33,3 @@ class App {
   }
 }
 
-export default App;

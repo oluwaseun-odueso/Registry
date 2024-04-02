@@ -2,7 +2,7 @@ import AWS from 'aws-sdk';
 import crypto from 'crypto'
 require('dotenv').config()
 
-class CognitoService {
+export default class CognitoService {
   private config = {
     region: process.env.REGION
   }
@@ -28,7 +28,7 @@ class CognitoService {
       return true
     } catch (error: any) {
       console.log(error)
-      return false
+      throw new Error(`Error signing up user, ${error.message}`)
     }
   }
 
@@ -50,11 +50,36 @@ class CognitoService {
     }
   }
 
+  public async signInUser(username: string, password: string): Promise<boolean> {
+    try {
+      const params = {
+        AuthFlow: 'USER_PASSWORD_AUTH',
+        ClientId: this.clientId,
+        AuthParameters: {
+          'USERNAME': username,
+          'PASSWORD': password,
+          'SECRET_HASH': this.generateHash(username)
+        }
+      }
+
+      const data = await this.cognitoIdentity.initiateAuth(params).promise()
+      console.log(data)
+      return true
+    } catch (error: any) {
+      throw new Error(`Error signing in user, ${error.message}`)
+    }
+  }
+
   private generateHash(username: string): string {
     return crypto.createHmac('SHA256', this.secretHash)
       .update(username + this.clientId)
       .digest('base64')
   }
+
+  // hashSecret(username: string): string {
+  //   return crypto.createHmac('SHA256', this.secretHash)
+  //   .update(username + this.clientId)
+  //   .digest('base64')  
+  // }
 }
 
-export default CognitoService;
