@@ -70,12 +70,12 @@ export default class CognitoService {
     }
   }
 
-  public async changePassword(oldUserPassword: string, newUserPassword: string) {
+  public async changePassword(accessToken: string, oldUserPassword: string, newUserPassword: string) {
     try {
       const params = {
         PreviousPassword: oldUserPassword,
         ProposedPassword: newUserPassword,
-        AccessToken: 'ACCESS_TOKEN'
+        AccessToken: accessToken
       }
       const data = await this.cognitoIdentity.changePassword(params).promise()
       console.log(data)
@@ -85,10 +85,10 @@ export default class CognitoService {
     }
   }
 
-  public async deleteUser(username: string): Promise<boolean> {
+  public async deleteUser(accessToken: string): Promise<boolean> {
     try {
       const params = {
-        AccessToken: 'ACCESS_TOKEN'
+        AccessToken: accessToken
       }
       const data = await this.cognitoIdentity.deleteUser(params).promise()
       return true

@@ -22,17 +22,14 @@ export default class AuthMiddleware {
   verifyToken(req: Request, res: Response, next: NextFunction) {
     try {
       const token = req.header('Authorization')
-      console.log(token)
 
       if(!token) return res.status(UNAUTHORIZED).json({status: false, message: "Please Login to perform operation"})
 
       let decodedToken = jwt.decode(token, { complete: true });
       if (decodedToken === null) return res.status(UNAUTHORIZED).json({status: false, message: "Invalid token"})
 
-      console.log(decodedToken)
       let kid = decodedToken.header.kid!;
       let pem = pems[kid]
-      console.log(pem)
       if (!pem) {
         res.status(401).end()
         return
@@ -41,9 +38,7 @@ export default class AuthMiddleware {
         if (err) {
           res.status(UNAUTHORIZED).end()
           return
-        } 
-        next()
-        
+        } next()
       })
     } catch (error: any) {
       throw new Error(``)
@@ -69,7 +64,6 @@ export default class AuthMiddleware {
         const pem = jwkToPem(jwk);
         pems[key_id] = pem;
       }
-      console.log("got PEMS")
     } catch (error: any) {
       throw new Error(`Error fetching jwks, ${error.message}`)
     }
