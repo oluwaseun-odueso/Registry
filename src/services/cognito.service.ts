@@ -101,7 +101,8 @@ export default class CognitoService {
     try {
       const params = {
         ClientId: this.clientId,
-        Username: username
+        Username: username,
+        SecretHash: this.generateHash(username)
       }
       const data = await this.cognitoIdentity.forgotPassword(params).promise()
       console.log(data)
@@ -111,13 +112,14 @@ export default class CognitoService {
     }
   }
 
-  public async confirmPassword(username: string, confirmationCode: string, newPassword: string): Promise<boolean> {
+  public async confirmNewPassword(username: string, confirmationCode: string, newPassword: string): Promise<boolean> {
     try {
       const params = {
         ClientId: this.clientId,
-        Username: username,
         ConfirmationCode: confirmationCode,
-        Password: newPassword
+        Password: newPassword,
+        Username: username,
+        SecretHash: this.generateHash(username)
       }
       const data = await this.cognitoIdentity.confirmForgotPassword(params).promise()
       console.log(data)
@@ -131,7 +133,8 @@ export default class CognitoService {
     try{
       const params = {
         ClientId: this.clientId,
-        Username: username
+        Username: username,
+        SecretHash: this.generateHash(username)
       }
       const data = await this.cognitoIdentity.resendConfirmationCode(params).promise()
       console.log(data)

@@ -19,11 +19,12 @@ export default class AuthController {
     this.router.post('/signup', this.validateBody('signUp'), this.signUp)
     this.router.post('/signin', this.validateBody('signIn'), this.signIn)
     this.router.post('/verify', this.validateBody("verify"), this.verify)
-    this.router.use(this.authMiddleware.verifyToken)
     this.router.get('/resend-verification-link', this.validateBody('resendVerificationCode'), this.resendEmailVerificationCode)
-    this.router.get('/change-password', this.validateBody('changePassword'), this.changePassword)
     this.router.get('/forgot-password', this.validateBody('forgotPassword'), this.forgotPassword)
     this.router.get('/confirm-password', this.validateBody('confirmPassword'), this.confirmPassword)
+    this.router.use(this.authMiddleware.verifyToken)
+    this.router.get('/change-password', this.validateBody('changePassword'), this.changePassword)
+    this.router.get('/delete-user-account', this.deleteUser)
   }
 
   async signUp(req: Request, res:Response) {
@@ -110,7 +111,7 @@ export default class AuthController {
 
       res.status(OK).json({status: true, message: "Kindly check your email for verification code", success})
     } catch (error: any) {
-      res.status(INTERNAL_SERVER_ERROR).json({status: false, message: "Error sending verification code to user"})
+      res.status(INTERNAL_SERVER_ERROR).json({status: false, message: "Error resending verification code to user"})
     }
   }
 
@@ -165,13 +166,29 @@ export default class AuthController {
       const { username, confirmationCode, newPassword} = req.body
 
       const cognito = new CognitoService();
-      const success = await cognito.confirmPassword(username, confirmationCode, newPassword)
+      const success = await cognito.confirmNewPassword(username, confirmationCode, newPassword)
 
       if (!success) return res.status(BAD_REQUEST).json({status: false, message: "Error reseting password"})
 
       res.status(OK).json({status: true, message: "Password reset successful", success})
     } catch (error: any) {
       res.status(INTERNAL_SERVER_ERROR).json({status: false, message: "Error reseting user password"})
+    }
+  }
+
+  async deleteUser(req: Request, res: Response) {
+    try {
+      const token = req.header('Authorization')
+      if(!token) return res.status(UNAUTHORIZED).json({status: false, message: "Please Login to perform operation"})
+
+      const cognito = new CognitoService();
+      const success = await cognito.deleteUser(token)
+
+      if (!success) return res.status(BAD_REQUEST).json({status: false, message: "Error deleting account"})
+
+      res.status(OK).json({status: true, message: "User account has been deleted", success})
+    } catch (error: any) {
+      res.status(INTERNAL_SERVER_ERROR).json({status: false, message: "Error deleting user password"})
     }
   }
 
