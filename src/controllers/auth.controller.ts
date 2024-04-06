@@ -24,7 +24,7 @@ export default class AuthController {
     this.router.get('/confirm-password', this.validateBody('confirmPassword'), this.confirmPassword)
     this.router.use(this.authMiddleware.verifyToken)
     this.router.get('/change-password', this.validateBody('changePassword'), this.changePassword)
-    this.router.get('/delete-user-account', this.deleteUser)
+    this.router.delete('/delete-user-account', this.deleteUser)
   }
 
   async signUp(req: Request, res:Response) {
